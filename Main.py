@@ -1,6 +1,7 @@
 import pygame
 import random as r
 import sys
+import copy
 pygame.init()
 
 
@@ -11,6 +12,8 @@ padding = 20
 score = 0
 screen = pygame.display.set_mode((screen_width, screen_height))
 
+font = pygame.font.SysFont('timesnewroman',  50)
+
 # Create a 4x4 board
 board = [['0', '0', '0', '0'],
          ['0', '0', '0', '0'],
@@ -18,47 +21,47 @@ board = [['0', '0', '0', '0'],
          ['0', '0', '0', '0']]
 
 
-def printBoard():
-    for row in board:
+def printBoard(temp):
+    for row in temp:
         print(row)
 
 
 def spawnTile():
-    emptyX = []
-    emptyY = []
+    # This could be refactored so that it looks slighlty and runs slightly different
+    # For this i would be thinking that you store the x and y in the different lists in a 2d list
+    # This way you would only have to rnadomise one thing instead of 3 -- This would be my assumption anyway
+
+    # Prints the empty list
+    emptyList = []
     for i in range(0, 4):
         for j in range(0, 4):
-            # print(board[i][j])
             if board[i][j] == '0':
-                emptyX.append(i)
-                emptyY.append(j)
+                emptyList.append([i, j])
 
-    randomPlace = r.randint(0, (len(emptyX)-1))
-
-    randomX = emptyX[randomPlace]
-    randomY = emptyY[randomPlace]
+    randomTemp = r.randint(0, len(emptyList)-1)
     temp = r.randint(1, 10) / 10
+    randomSpot = emptyList[randomTemp]
     if temp > 0.8:
-        board[randomX][randomY] = 2
+        board[randomSpot[0]][randomSpot[1]] = '2'
     else:
-        board[randomX][randomY] = 4
+        board[randomSpot[0]][randomSpot[1]] = '4'
 
 
 def slideRow(row):
     # Slides the row to the other side
-    if row is None:
-        print('Fuck')
+
     temp = ['0', '0', '0', '0']
     index = 3
-    for i in range(3, 0, -1):
+    for i in range(3, -1, -1):
         if row[i] != '0':
             temp[index] = row[i]
             index -= 1
+
     return temp
 
 
 def combineRow(row):
-    for i in range(3, 0, -1):
+    for i in range(3, -1, -1):
         a = row[i]
         b = row[i-1]
         # If they are the same value then they need to be combined
@@ -73,25 +76,23 @@ def combineRow(row):
 
 
 def operateRow(row):
-    # print(row)
     row = slideRow(row)
-    # print(row)
     row = combineRow(row)
-    # print(row)
     row = slideRow(row)
-    # print(row)
     return row
 
 
 def reverseList(tempList=[]):
-    reversedList = [0, 0, 0, 0]
+    reversedList = ['0', '0', '0', '0']
     j = 4
     for i in range(0, 4):
         reversedList[j-1] = tempList[i]
         j -= 1
+    return reversedList
 
 
 def transposeBoard(tempBoard):
+
     newBoard = [['0', '0', '0', '0'],
                 ['0', '0', '0', '0'],
                 ['0', '0', '0', '0'],
@@ -103,9 +104,11 @@ def transposeBoard(tempBoard):
 
 
 def flipBoard(tempBoard):
+
     # Think i can do this using for row in tempBoard -> will test this later
-    for i in range(0, 3):
+    for i in range(0, 4):
         tempBoard[i] = reverseList(tempBoard[i])
+    return tempBoard
 
 
 def compare(a, b):
@@ -113,7 +116,6 @@ def compare(a, b):
         for j in range(0, 4):
             if a[i][j] != b[i][j]:
                 return True
-
     return False
 
 
@@ -121,33 +123,33 @@ def compare(a, b):
 spawnTile()
 spawnTile()
 
-printBoard()
+printBoard(board)
 
 # Draw the board
 while True:
 
     # The for loop is running but it is not looking up at the key events - maybe there needs to be a listener
     for event in pygame.event.get():
-        # print('running')
         flipped = False
         rotated = False
         played = True
 
         if event.type == pygame.KEYDOWN:
-
+            if event.key == pygame.K_b:
+                printBoard(board)
             if event.key == pygame.K_RIGHT:
-                print('RIGHT KEY BEING PRESSED')
+                pass
 
             elif event.key == pygame.K_LEFT:
-                print('LEFT KEY BEING PRESSED')
+
                 board = flipBoard(board)
                 flipped = True
             elif event.key == pygame.K_DOWN:
-                print('DOWN KEY BEING PRESSED')
+
                 board = transposeBoard(board)
                 rotated = True
             elif event.key == pygame.K_UP:
-                print('UP KEY BEING PRESSED')
+
                 board = transposeBoard(board)
                 board = flipBoard(board)
                 rotated = True
@@ -158,25 +160,17 @@ while True:
             played = False
 
         if played:
-            # backup = [['0', '0', '0', '0'],
-            #           ['0', '0', '0', '0'],
-            #           ['0', '0', '0', '0'],
-            #           ['0', '0', '0', '0']]
 
-            # for i in range(0, 4):
-            #     for j in range(0, 4):
-            #         backup[i][j] = board[i][j]
-
-            backup = board
-            #print(f'backup is : {backup}')
+            backup = board.copy()
 
             for i in range(0, 4):
-                # for row in board:
-                # row = operateRow(row)
-                board[i] = operateRow(board[i])
+
+                temp = operateRow(board[i])
+
+                board[i] = temp
 
             boardChanged = compare(backup, board)
-            print(boardChanged)
+
             if flipped == True:
                 board = flipBoard(board)
             if rotated == True:
@@ -193,7 +187,7 @@ while True:
     # Nest the loops and create the rectangles
     for i in range(0, 4):
         for j in range(0, 4):
-            temp = board[i][j]
+
             x = padding+(padding+blockSize)*j
             y = padding+(padding+blockSize)*i
 
@@ -221,16 +215,32 @@ while True:
                     c = [237, 197, 63]
                 else:
                     c = [237, 194, 46]
-
+            # Just need to get the text feature in there now
             pygame.draw.rect(surface=screen, color=c, rect=pygame.Rect(
                 x, y, blockSize, blockSize))
-    # print('********************')
-    # printBoard()
-    # print('********************')
-    available, gameWon = False, False
-    for i in range(0, 4):
-        for j in range(0, 4):
-            if board[i][j] == '2048':
-                gameWon = True
+            if board[i][j] != '0':
+                if board[i][j] == '128' or board[i][j] == '256' or board[i][j] == '512':
+                    text = font.render(board[i][j], True, (0, 0, 0))
+                    screen.blit(text, (x+18, y+30))
+                elif board[i][j] == '1024' or board[i][j] == '2048':
+                    text = font.render(board[i][j], True, (0, 0, 0))
+                    screen.blit(text, (x, y+30))
+                else:
+                    text = font.render(board[i][j], True, (0, 0, 0))
+                    screen.blit(text, (x+30, y+30))
+                # We want to display the text here for the user of what the current number is
+    if '2048' in board:
+        gameWon = True
+    else:
+        gameWon = False
+
+    if '0' in board:
+        available = True
+    else:
+        available = False
+
+    if gameWon or available:
+        pygame.quit()
+        break
 
     pygame.display.flip()
