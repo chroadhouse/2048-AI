@@ -2,13 +2,16 @@ import random as r
 
 
 class Board:
-
+    # Creates an empty board
     def __init__(self):
         self.board = [['0', '0', '0', '0'],
                       ['0', '0', '0', '0'],
                       ['0', '0', '0', '0'],
                       ['0', '0', '0', '0']]
 
+        self.score = 0
+
+    # Slide row left or right
     def slideRow(self, row):
         temp = ['0', '0', '0', '0']
         index = 3
@@ -19,6 +22,7 @@ class Board:
 
         return temp
 
+    # Combines the rows once they have being combined
     def combineRow(self, row):
         for i in range(3, -1, -1):
             a = row[i]
@@ -26,6 +30,7 @@ class Board:
 
             if a == b:
                 row[i] = str((int(a) + int(b)))
+                self.score += int(row[i])
                 row[i-1] = '0'
         return row
 
@@ -44,7 +49,6 @@ class Board:
         return reversedList
 
     def transposeBoard(self, tempBoard):
-
         newBoard = [['0', '0', '0', '0'],
                     ['0', '0', '0', '0'],
                     ['0', '0', '0', '0'],
@@ -79,4 +83,19 @@ class Board:
         if temp > 0.8:
             self.board[randomSpot[0]][randomSpot[1]] = '2'
         else:
-            self.boardboard[randomSpot[0]][randomSpot[1]] = '4'
+            self.board[randomSpot[0]][randomSpot[1]] = '4'
+
+    def isGameOver(self):
+        # First check if you have won the game
+        for r in self.board:
+            for c in r:
+                if c == '2048':
+                    return True
+
+        # then check for space -- needs to be more than just is there a 0 left
+        for r in self.board:
+            for c in r:
+                if c == '0':
+                    return False
+        # There are no spaces left
+        return True
