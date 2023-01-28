@@ -1,4 +1,5 @@
 import random as r
+import copy
 
 
 class Board:
@@ -23,20 +24,21 @@ class Board:
         return temp
 
     # Combines the rows once they have being combined
-    def combineRow(self, row):
+    def combineRow(self, row, ignoreScore):
         for i in range(3, -1, -1):
             a = row[i]
             b = row[i-1]
 
             if a == b:
                 row[i] = str((int(a) + int(b)))
-                self.score += int(row[i])
+                if not ignoreScore:
+                    self.score += int(row[i])
                 row[i-1] = '0'
         return row
 
-    def operateRow(self, row):
+    def operateRow(self, row, ignoreScore):
         row = self.slideRow(row)
-        row = self.combineRow(row)
+        row = self.combineRow(row, ignoreScore)
         row = self.slideRow(row)
         return row
 
@@ -92,10 +94,90 @@ class Board:
                 if c == '2048':
                     return True
 
-        # then check for space -- needs to be more than just is there a 0 left
-        for r in self.board:
-            for c in r:
-                if c == '0':
-                    return False
-        # There are no spaces left
-        return True
+        if not self.isLegalMove():
+            return True  # The game is over
+        return False
+
+    def getPossibleMoves(self):
+        # check whether you can move up down left or right
+        # If you can returnt the moves you can do
+        # If not return a empty list -- This can be done to check game over
+
+        moves = ['left', 'right', 'up', 'down']
+        possibleMoves = []
+
+        for m in moves:
+            #print(f'Move is {m}')
+            tempBoard = self.board.copy()
+            if m == 'left':
+                tempBoard = self.flipBoard(tempBoard)
+            elif m == 'right':
+                # We do nothing
+                pass
+            elif m == 'down':
+                tempBoard = self.transposeBoard(tempBoard)
+            else:  # m is up
+                tempBoard = self.transposeBoard(tempBoard)
+                tempBoard = self.flipBoard(tempBoard)
+
+            backup = tempBoard.copy()
+
+            for i in range(0, 4):
+                temp = self.operateRow(tempBoard[i], True)
+
+                tempBoard[i] = temp
+
+            boardChange = self.compare(backup, tempBoard)
+
+            # Board has changed so we can make a legal move in one direction
+            if boardChange:
+                possibleMoves.append(m)
+
+        return possibleMoves
+        # The method was no broken so there must be not possible moves
+        return False
+
+    def isLegalMove(self):
+        temp = self.getPossibleMoves()
+        # print(temp)
+
+        if temp:
+            return True  # There are moves you can do
+        else:
+            return False
+
+    def move(self, direction):
+        flipped = False
+        rotated = False
+        played = True
+
+        if direction == 'right':
+            pass
+        elif direction == 'left':
+            self.board = self.flipBoard(self.board)
+            flipped = True
+        elif direction == 'down':
+            self.board = self.transposeBoard(self.board)
+            rotated = True
+        elif direction == 'up':
+            self.board = self.transposeBoard(self.board)
+            rotated = True
+            self.board = self.flipBoard(self.board)
+            flipped = True
+        else:
+            played = False
+
+        if played:
+            backup = self.board.copy()
+            for i in range(0, 4):
+                temp = self.operateRow(self.board[i], ignoreScore=False)
+                self.board[i] = temp
+
+            boardChanged = self.compare(self.board, backup)
+
+            if flipped:
+                self.board = self.flipBoard(self.board)
+            if rotated:
+                self.board = self.transposeBoard(self.board)
+            if boardChanged:
+                self.spawnTile()
