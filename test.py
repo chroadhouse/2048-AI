@@ -1,130 +1,23 @@
+import Board
+
 import pygame
-import random as r
-import sys
+
+
 import copy
 pygame.init()
 
+b = Board()
 
 screen_width = 500
 screen_height = 500
 blockSize = 100
 padding = 20
-
-screen = pygame.display.set_mode((screen_width, screen_height))
 score = 0
-font = pygame.font.SysFont('timesnewroman',  50)
-
-# Create a 4x4 board
-board = [['0', '0', '0', '0'],
-         ['0', '0', '0', '0'],
-         ['0', '0', '0', '0'],
-         ['0', '0', '0', '0']]
-
-
-def printBoard(temp):
-    for row in temp:
-        print(row)
-
-
-def spawnTile():
-    # This could be refactored so that it looks slighlty and runs slightly different
-    # For this i would be thinking that you store the x and y in the different lists in a 2d list
-    # This way you would only have to rnadomise one thing instead of 3 -- This would be my assumption anyway
-
-    # Prints the empty list
-    emptyList = []
-    for i in range(0, 4):
-        for j in range(0, 4):
-            if board[i][j] == '0':
-                emptyList.append([i, j])
-
-    randomTemp = r.randint(0, len(emptyList)-1)
-    temp = r.randint(1, 10) / 10
-    randomSpot = emptyList[randomTemp]
-    if temp > 0.8:
-        board[randomSpot[0]][randomSpot[1]] = '2'
-    else:
-        board[randomSpot[0]][randomSpot[1]] = '4'
-
-
-def slideRow(row):
-    # Slides the row to the other side
-
-    temp = ['0', '0', '0', '0']
-    index = 3
-    for i in range(3, -1, -1):
-        if row[i] != '0':
-            temp[index] = row[i]
-            index -= 1
-
-    return temp
-
-
-def combineRow(row):
-    for i in range(3, -1, -1):
-        a = row[i]
-        b = row[i-1]
-        # If they are the same value then they need to be combined
-        if a == b:
-            # tempA = int(a)
-            # tempB = int(b)
-            # temp = tempA + tempB
-            # row[i] = str(temp)
-            # score += row[i]
-            row[i] = str((int(a) + int(b)))
-            global score
-            score += int(row[i])
-            row[i-1] = '0'
-    return row
-
-
-def operateRow(row):
-    row = slideRow(row)
-    row = combineRow(row)
-    row = slideRow(row)
-    return row
-
-
-def reverseList(tempList=[]):
-    reversedList = ['0', '0', '0', '0']
-    j = 4
-    for i in range(0, 4):
-        reversedList[j-1] = tempList[i]
-        j -= 1
-    return reversedList
-
-
-def transposeBoard(tempBoard):
-
-    newBoard = [['0', '0', '0', '0'],
-                ['0', '0', '0', '0'],
-                ['0', '0', '0', '0'],
-                ['0', '0', '0', '0']]
-    for i in range(0, 4):
-        for j in range(0, 4):
-            newBoard[i][j] = tempBoard[j][i]
-    return newBoard
-
-
-def flipBoard(tempBoard):
-
-    # Think i can do this using for row in tempBoard -> will test this later
-    for i in range(0, 4):
-        tempBoard[i] = reverseList(tempBoard[i])
-    return tempBoard
-
-
-def compare(a, b):
-    for i in range(0, 4):
-        for j in range(0, 4):
-            if a[i][j] != b[i][j]:
-                return True
-    return False
-
+screen = pygame.display.set_mode((screen_width, screen_height))
 
 # Game starts from here
-spawnTile()
-spawnTile()
+b.spawnTile()
+b.spawnTile()
 
 # printBoard(board)
 
@@ -138,9 +31,9 @@ while True:
         played = True
 
         if event.type == pygame.KEYDOWN:
-            print(f'Score: {score}')
             if event.key == pygame.K_b:
-                printBoard(board)
+                pass
+                # printBoard(board)
             if event.key == pygame.K_RIGHT:
                 pass
 
@@ -168,7 +61,9 @@ while True:
             backup = board.copy()
 
             for i in range(0, 4):
+
                 temp = operateRow(board[i])
+
                 board[i] = temp
 
             boardChanged = compare(backup, board)
@@ -242,7 +137,6 @@ while True:
         available = False
 
     if gameWon or available:
-        print('Game Over')
         pygame.quit()
         break
 
