@@ -1,0 +1,41 @@
+Player,Number of Moves,Highest Tile,Score
+Human,312,512,6516
+Human,442,1024,11016
+Human,112,128,1540
+Human,441,1024,11112
+Human,576,2048,18692
+Human,487,1024,12748
+Human,241,512,5012
+Human,448,1024,11216
+Human,585,1024,14736
+Human,469,1024,11440
+Random Agent,304,512,6440
+Random Agent,92,128,1228
+Random Agent,110,128,1464
+Random Agent,230,512,4880
+Random Agent,200,512,4164
+Random Agent,283,512,6092
+Random Agent,155,256,2596
+Random Agent,192,256,3472
+Random Agent,255,512,5340
+Random Agent,87,128,1172
+MCTS Agent,382,1024,9608
+MCTS Agent,466,1024,11816
+MCTS Agent,292,512,6240
+MCTS Agent,611,2048,19108
+MCTS Agent,596,2048,19036
+MCTS Agent,475,1024,11744
+MCTS Agent,586,2048,18760
+MCTS Agent,593,2048,18900
+MCTS Agent,602,2048,18864
+MCTS Agent,587,2048,18748
+Q-Learning Agent,112,128,1488
+Q-Learning Agent,84,128,1068
+Q-Learning Agent,92,128,1212
+Q-Learning Agent,68,64,708
+Q-Learning Agent,109,128,1448
+Q-Learning Agent,131,128,1920
+Q-Learning Agent,68,64,692
+Q-Learning Agent,151,256,2532
+Q-Learning Agent,42,64,380
+Q-Learning Agent,113,128,1552

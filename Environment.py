@@ -1,5 +1,6 @@
 import pygame
 from Board import Board
+import copy
 
 
 class Environment():
@@ -14,62 +15,55 @@ class Environment():
         self.font = pygame.font.SysFont('timesnewroman', 50)
         self.b = Board()
         self.agent = agent
+        self.numberOfMoves = 0
 
     def runHuman(self):
-        self.b.spawnTile()
-        self.b.spawnTile()
-
+        self.b.reset()
+        self.numberOfMoves = 0
         while True:
 
             # The for loop is running but it is not looking up at the key events - maybe there needs to be a listener
             for event in pygame.event.get():
                 flipped = False
                 rotated = False
-                played = True
+                played = False
 
                 if event.type == pygame.KEYDOWN:
-                    print(f'Score: {self.b.score}')
-                    if event.key == pygame.K_b:
-                        pass
-                        # printBoard(board)
+                    print(f'Print: {self.b.score}')
                     if event.key == pygame.K_RIGHT:
-                        pass
-
+                        played = True
                     elif event.key == pygame.K_LEFT:
-
                         self.b.board = self.b.flipBoard(self.b.board)
                         flipped = True
+                        played = True
                     elif event.key == pygame.K_DOWN:
-
                         self.b.board = self.b.transposeBoard(self.b.board)
                         rotated = True
+                        played = True
                     elif event.key == pygame.K_UP:
                         self.b.board = self.b.transposeBoard(self.b.board)
                         self.b.board = self.b.flipBoard(self.b.board)
                         rotated = True
                         flipped = True
-                    else:
-                        played = False
-                else:
-                    played = False
+                        played = True
 
                 if played:
 
                     backup = self.b.board.copy()
-
                     for i in range(0, 4):
-
+                        #print(f'Row index {i}')
                         temp = self.b.operateRow(self.b.board[i], False)
-
                         self.b.board[i] = temp
 
                     boardChanged = self.b.compare(backup, self.b.board)
 
-                    if flipped == True:
+                    if flipped:
                         self.b.board = self.b.flipBoard(self.b.board)
-                    if rotated == True:
+                    if rotated:
                         self.b.board = self.b.transposeBoard(self.b.board)
-                    if boardChanged == True:
+                    if boardChanged:
+                        self.numberOfMoves += 1
+                        print(f'Number of Moves: {self.numberOfMoves}')
                         self.b.spawnTile()
             # Screen background
             self.screen.fill([255, 255, 255])
@@ -129,23 +123,24 @@ class Environment():
                         # We want to display the text here for the user of what the current number is
 
             if self.b.isGameOver():
-                # pygame.quit()
+                self.b.printBoard()
+                pygame.quit()
                 print('Thank you for playing')
-                # break
+                break
 
             pygame.display.flip()
+        return self.b, self.numberOfMoves
 
     def runAgent(self):
-        self.b.spawnTile()
-        self.b.spawnTile()
-
+        self.b.reset()
+        self.numberOfMoves = 0
         while True:
 
             flipped = False
             rotated = False
             played = True
-
-            move = self.agent.act(self.b)
+            tempBoard = copy.deepcopy(self.b)
+            move = self.agent.act(tempBoard)
             print(move)
             if move == 'left':
                 self.b.board = self.b.flipBoard(self.b.board)
@@ -176,6 +171,9 @@ class Environment():
                 if rotated:
                     self.b.board = self.b.transposeBoard(self.b.board)
                 if boardChanged:
+                    self.numberOfMoves += 1
+                    print(f'Number of Moves: {self.numberOfMoves}')
+                    print(f'Print: {self.b.score}')
                     self.b.spawnTile()
 
             self.screen.fill([255, 255, 255])
@@ -235,9 +233,9 @@ class Environment():
                         # We want to display the text here for the user of what the current number is
 
             if self.b.isGameOver():
-                # pygame.quit()
-                print('Thank you for playing')
-                # break
+                self.b.printBoard()
+                pygame.quit()
+                return self.b, self.numberOfMoves
 
             pygame.display.flip()
             # Here the agent will play the game

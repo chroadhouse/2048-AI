@@ -30,9 +30,11 @@ class Board:
             b = row[i-1]
 
             if a == b:
+                #print(f'Column index {i}')
                 row[i] = str((int(a) + int(b)))
                 if not ignoreScore:
                     self.score += int(row[i])
+                    # print(f'Score after this {self.score}')
                 row[i-1] = '0'
         return row
 
@@ -92,6 +94,7 @@ class Board:
         for r in self.board:
             for c in r:
                 if c == '2048':
+                    print('Won')
                     return True
 
         if not self.isLegalMove():
@@ -107,7 +110,7 @@ class Board:
         possibleMoves = []
 
         for m in moves:
-            #print(f'Move is {m}')
+            # print(f'Move is {m}')
             tempBoard = self.board.copy()
             if m == 'left':
                 tempBoard = self.flipBoard(tempBoard)
@@ -170,7 +173,7 @@ class Board:
         if played:
             backup = self.board.copy()
             for i in range(0, 4):
-                temp = self.operateRow(self.board[i], ignoreScore=False)
+                temp = self.operateRow(self.board[i], ignoreScore=True)
                 self.board[i] = temp
 
             boardChanged = self.compare(self.board, backup)
@@ -181,3 +184,75 @@ class Board:
                 self.board = self.transposeBoard(self.board)
             if boardChanged:
                 self.spawnTile()
+
+    def boardToInt(self):
+        tempBoard = [map(int, i) for i in self.board]
+
+        return tempBoard
+
+    def getBoardScore(self):
+        tempBoard = self.boardToInt()
+        max = 0
+        for r in tempBoard:
+            for c in r:
+                if c > max:
+                    max = c
+        if max == 32:
+            return 1
+        elif max == 64:
+            return 2
+        elif max == 128:
+            return 3
+        elif max == 256:
+            return 4
+        elif max == 512:
+            return 5
+        elif max == 1024:
+            return 8
+        elif max == 2048:
+            return 10
+        else:
+            return 0
+
+    def getState(self):
+        state = []
+        tempBoard = self.boardToInt()
+        for row in tempBoard:
+            for col in row:
+                state.append(col)
+
+        return state
+
+    def step(self, action):
+        # For the reward store the score and the highest tile
+        # This is a kind of idea of stepping
+        self.move(action)
+        # This moves - now check that the game is done
+        reward = self.getBoardScore()
+        done = self.isGameOver()
+        return self, reward, done
+
+    def reset(self):
+        print('Data has being reset')
+        self.board = [['0', '0', '0', '0'],
+                      ['0', '0', '0', '0'],
+                      ['0', '0', '0', '0'],
+                      ['0', '0', '0', '0']]
+
+        self.score = 0
+        self.spawnTile()
+        self.spawnTile()
+
+    def printBoard(self):
+        for row in self.board:
+            print(row)
+
+    def boardForData(self):
+        tempBoard = self.boardToInt()
+        max = 0
+        for r in tempBoard:
+            for c in r:
+                if c > max:
+                    max = c
+
+        return max, self.score

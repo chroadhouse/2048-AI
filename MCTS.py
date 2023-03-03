@@ -8,17 +8,15 @@ class MonteCarloTreeSearch():
         self.root = Node(state)
 
     def search(self, n):
-        """Runs the 4 phaswes of the MCTS algorithm and at the end picks the best actoin
-
-
+        """Runs the 4 phases of the MCTS algorithm and at the end picks the best actoin
         n - number of iteractions
         """
         for i in range(0, n):
-            print(i)
+            # print(i)
             node = self.treePolicy()
             reward = node.simulation()
             node.backpropagate(reward)
-        return self.root.UCT()
+        return self.root.UCTShow()
 
     def treePolicy(self):
         currentNode = self.root
@@ -30,6 +28,10 @@ class MonteCarloTreeSearch():
         return currentNode
 
     # Could write a second tree policy that looks at the current score
+    def secondTreePolicy(self):
+        currentNode = self.root
+
+        return currentNode
 
 
 class Node():
@@ -44,8 +46,8 @@ class Node():
     @property
     def untriedAction(self):
         if not hasattr(self, '_untriedActions'):
-            self.__untriedActions = self.state.getPossibleMoves()
-        return self.__untriedActions
+            self._untriedActions = self.state.getPossibleMoves()
+        return self._untriedActions
 
     def n(self):
         return self.numberOfVisits
@@ -57,6 +59,7 @@ class Node():
         """State is copied and action picked from list, this is then performed on new state is created, this is then aded ot the child list and returned"""
         newState = copy.deepcopy(self.state)
         action = self.untriedAction.pop()
+        # print(action)
         newState.move(action)
         childNode = Node(newState, parent=self, actionPlayed=action)
         self.children.append(childNode)
@@ -76,10 +79,7 @@ class Node():
             action = self.rolloutPolicy(potencialMoves)
             rolloutState.move(potencialMoves[action])
             if rolloutState.isGameOver():
-                if '2048' in rolloutState.board:
-                    return 1
-                else:
-                    return 0
+                return rolloutState.getBoardScore()
 
     def rolloutPolicy(self, potencialMoves):
         return r.randint(0, len(potencialMoves)-1)
@@ -93,14 +93,26 @@ class Node():
     def isFullyExpanded(self):
         return len(self.untriedAction) == 0
 
-    def UCT(self, c=1.6):
+    def UCT(self, c=0.5):
 
         uctScore = [(child.w() / (child.n())) + c * np.sqrt((2 *
                                                              np.log(self.n()) / (child.n()))) for child in self.children]
 
         try:
             index = np.argmax(uctScore)
+            return self.children[index]
+        except Exception:
+            return None
 
+    def UCTShow(self, c=0.5):
+        uctScore = [(child.w() / (child.n())) + c * np.sqrt((2 *
+                                                             np.log(self.n()) / (child.n()))) for child in self.children]
+
+        try:
+            index = np.argmax(uctScore)
+            for i in range(0, len(self.children)):
+                print(
+                    f'{self.children[i].actionPlayed} -- Index Score: {uctScore[i]} -- Number of Vistis: {self.children[i].n()} -- Wins: {self.children[i].w()}')
             return self.children[index]
         except Exception:
             return None
